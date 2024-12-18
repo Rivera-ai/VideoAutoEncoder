@@ -7,3 +7,12 @@
 
 ### VRAM
 ![](Image/VRAM.png)
+
+## Installation
+
+```bash
+git clone https://github.com/Rivera-ai/VideoAutoencoder.git
+cd VideoAutoencoder
+pip install -e .
+```
+
