@@ -20,12 +20,19 @@ pip install -e .
 
 ### Epoch 0 Reconstruction Progress
 
-The following videos demonstrate the reconstruction quality at different steps during the first epoch of training:
+The following demonstrations show the reconstruction quality at different steps during the first epoch of training:
 
-- [Step 0 Reconstruction](videos/step0_epoch_0.mp4)
-- [Step 50 Reconstruction](videos/step50_epoch_0.mp4)
-- [Step 100 Reconstruction](videos/step100_epoch_0.mp4)
-- [Step 150 Reconstruction](videos/step150_epoch_0.mp4)
-- [Step 200 Reconstruction](videos/step200_epoch_0.mp4)
+#### Step 0
+![Step 0 Reconstruction](videos/step0_epoch_0.gif)
 
-Note: Click on the links above to download and view the reconstruction videos.
+#### Step 50
+![Step 50 Reconstruction](videos/step50_epoch_0.gif)
+
+#### Step 100
+![Step 100 Reconstruction](videos/step100_epoch_0.gif)
+
+#### Step 150
+![Step 150 Reconstruction](videos/step150_epoch_0.gif)
+
+#### Step 200
+![Step 200 Reconstruction](videos/step200_epoch_0.gif)
