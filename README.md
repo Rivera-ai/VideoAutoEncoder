@@ -22,32 +22,10 @@ pip install -e .
 
 The following videos demonstrate the reconstruction quality at different steps during the first epoch of training:
 
-#### Step 0
-<video width="320" height="240" controls>
-  <source src="videos/step0_epoch_0.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
+- [Step 0 Reconstruction](videos/step0_epoch_0.mp4)
+- [Step 50 Reconstruction](videos/step50_epoch_0.mp4)
+- [Step 100 Reconstruction](videos/step100_epoch_0.mp4)
+- [Step 150 Reconstruction](videos/step150_epoch_0.mp4)
+- [Step 200 Reconstruction](videos/step200_epoch_0.mp4)
 
-#### Step 50
-<video width="320" height="240" controls>
-  <source src="videos/step50_epoch_0.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
-
-#### Step 100
-<video width="320" height="240" controls>
-  <source src="videos/step100_epoch_0.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
-
-#### Step 150
-<video width="320" height="240" controls>
-  <source src="videos/step150_epoch_0.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
-
-#### Step 200
-<video width="320" height="240" controls>
-  <source src="videos/step200_epoch_0.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
+Note: Click on the links above to download and view the reconstruction videos.
