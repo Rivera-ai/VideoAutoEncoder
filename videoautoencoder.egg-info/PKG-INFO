@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: videoautoencoder
+Version: 0.1.0
+Summary: A video autoencoder library for video compression and reconstruction on low memory graphics cards
+Author: Rivera.ai/Fredy Rivera
+Author-email: riveraaai200678@gmail.com
+Requires-Python: >=3.8
+Requires-Dist: torch
+Requires-Dist: torchvision
+Requires-Dist: numpy
+Requires-Dist: pillow
+Requires-Dist: av
+Requires-Dist: tqdm
+Requires-Dist: torchmetrics

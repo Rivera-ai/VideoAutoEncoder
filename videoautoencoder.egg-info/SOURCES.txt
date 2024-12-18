@@ -1,0 +1,9 @@
+README.md
+setup.py
+VideoAutoencoder/Model.py
+VideoAutoencoder/__init__.py
+videoautoencoder.egg-info/PKG-INFO
+videoautoencoder.egg-info/SOURCES.txt
+videoautoencoder.egg-info/dependency_links.txt
+videoautoencoder.egg-info/requires.txt
+videoautoencoder.egg-info/top_level.txt
