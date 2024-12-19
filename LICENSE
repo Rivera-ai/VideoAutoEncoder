@@ -1,0 +1,39 @@
+---
+
+RiveraAICloseLicense (2006) for the VideoAutoencoder Model and Inference Library
+
+Copyright (c) 2024 Fredy Rivera and Rivera.ai. All rights reserved.
+
+Permitted Use:
+The use of these models and the inference library is granted solely for testing and evaluation purposes in non-production environments. Use in production environments is expressly prohibited without prior written consent from the copyright holder.
+
+License and Economic Agreement:
+To obtain authorization for the use of the model and library in a production environment, an economic agreement with Rivera.ai is required. Please contact Rivera.ai at the following email address to discuss terms and conditions: riveraaai200678@gmail.com
+
+Rights Reserved:
+The copyright holder reserves all rights to the technology, algorithms used in this model, and the inference library. No part of these resources may be modified, redistributed, sublicensed, or otherwise used without the prior written consent of the copyright holder.
+
+Additional Restrictions:
+
+1. No Reverse Engineering:
+   No reverse engineering, decompilation, disassembly, or any other attempts to discover the source code, architecture, algorithms, or any other part of the model and the inference library are permitted.
+
+2. No Derivative Works:
+   No creation of derivative works based on the model, the inference library, or any part thereof is permitted.
+
+3. No Competitive Use:
+   The model and the inference library may not be used to develop, enhance, or assist in the development of products or services that compete directly or indirectly with the products and services offered by Rivera.ai.
+
+4. No Distribution:
+   Distribution, sublicensing, rental, leasing, lending, sale, redistribution, or transfer of the model, the inference library, or any part thereof to third parties is prohibited without the prior written consent of the copyright holder.
+
+5. Audit Rights:
+   The copyright holder reserves the right to conduct reasonable audits to ensure compliance with the terms of this license. The licensee agrees to provide access and cooperation for such audits.
+
+6. Confidentiality:
+   The licensee must maintain the confidentiality of the model and the inference library, as well as any related documentation. Disclosure to third parties is not permitted without the prior written consent of the copyright holder.
+
+Disclaimer:
+THIS SOFTWARE IS PROVIDED "AS IS" AND THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGE, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---

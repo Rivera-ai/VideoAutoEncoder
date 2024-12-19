@@ -8,7 +8,7 @@
 ### VRAM
 ![](Image/VRAM.png)
 
-## Memory usage in the new version 0.2.0:
+## Memory usage in the new version 0.2.0
 
 ### RAM
 ![](Image/RAM2.png)
