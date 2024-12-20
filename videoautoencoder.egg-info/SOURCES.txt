@@ -1,7 +1,10 @@
+LICENSE
 README.md
 setup.py
 VideoAutoencoder/Model.py
 VideoAutoencoder/__init__.py
+VideoAutoencoder/Utils/__init__.py
+VideoAutoencoder/Utils/safe.py
 videoautoencoder.egg-info/PKG-INFO
 videoautoencoder.egg-info/SOURCES.txt
 videoautoencoder.egg-info/dependency_links.txt
