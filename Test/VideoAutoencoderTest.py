@@ -235,63 +235,65 @@ class VideoDataset(Dataset):
     def load_video(self, video_path):
         try:
             import av
-            container = av.open(str(video_path))
-            stream = container.streams.video[0]
+            with av.open(str(video_path)) as container:  # Usar context manager
+                stream = container.streams.video[0]
             
-            # Obtener todos los frames primero
-            frames = []
-            for frame in container.decode(video=0):
-                frames.append(frame)
+            # Contar frames primero sin guardarlos
+                total_frames = stream.frames
+                if total_frames == 0:
+                # Si no podemos obtener el conteo directamente, contamos manualmente
+                    total_frames = sum(1 for _ in container.decode(video=0))
+                    container.seek(0)  # Regresar al inicio
             
-            total_frames = len(frames)
-            if total_frames == 0:
-                raise ValueError("No frames found in video")
+
+                if total_frames == 0:
+                    raise ValueError("No frames found in video")
                 
             # Calcular índices para muestreo uniforme
-            if total_frames >= self.processor.num_frames:
-                indices = np.linspace(0, total_frames-1, self.processor.num_frames, dtype=int)
-            else:
-                indices = np.arange(total_frames)
-                
-            # Crear tensor de salida
-            video_tensor = torch.zeros(3, self.processor.num_frames, *self.processor.target_size)
-            
-            # Procesar frames seleccionados
-            for i, idx in enumerate(indices):
-                if i >= self.processor.num_frames:
-                    break
-                    
-                if idx >= len(frames):
-                    # Usar último frame si nos pasamos
-                    img = frames[-1].to_ndarray(format='rgb24')
+                if total_frames >= self.processor.num_frames:
+                    indices = np.linspace(0, total_frames-1, self.processor.num_frames, dtype=int)
                 else:
-                    img = frames[idx].to_ndarray(format='rgb24')
+                    indices = np.arange(total_frames)
+            
+            # Crear tensor de salida
+                video_tensor = torch.zeros(3, self.processor.num_frames, *self.processor.target_size)
+            
+            # Procesar frames uno por uno
+                current_frame = 0
+                for i, frame in enumerate(container.decode(video=0)):
+                    if i not in indices:
+                        continue
+                    
+                # Procesar solo los frames que necesitamos
+                    output_idx = np.where(indices == i)[0][0]
+                    if output_idx >= self.processor.num_frames:
+                        break
                 
-                # Convertir a tensor y normalizar
-                img = torch.from_numpy(img).float() / 255.0
+                # Convertir frame a tensor directamente
+                    img = frame.to_ndarray(format='rgb24')
+                    img = torch.from_numpy(img).float() / 255.0
                 
                 # Redimensionar si es necesario
-                if img.shape[0:2] != self.processor.target_size:
-                    img = F.interpolate(
-                        img.permute(2, 0, 1).unsqueeze(0),
-                        size=self.processor.target_size,
-                        mode='bilinear',
-                        align_corners=False
-                    ).squeeze(0)
-                else:
-                    img = img.permute(2, 0, 1)
+                    if img.shape[0:2] != self.processor.target_size:
+                        img = F.interpolate(
+                            img.permute(2, 0, 1).unsqueeze(0),
+                            size=self.processor.target_size,
+                            mode='bilinear',
+                            align_corners=False
+                        ).squeeze(0)
+                    else:
+                        img = img.permute(2, 0, 1)
                 
-                video_tensor[:, i] = img
+                    video_tensor[:, output_idx] = img
+                    current_frame = output_idx
             
             # Si faltan frames, repetir el último
-            if len(indices) < self.processor.num_frames:
-                video_tensor[:, len(indices):] = video_tensor[:, -1].unsqueeze(1).expand(-1, self.processor.num_frames - len(indices), -1, -1)
+                if current_frame + 1 < self.processor.num_frames:
+                    video_tensor[:, current_frame+1:] = video_tensor[:, current_frame].unsqueeze(1).expand(
+                        -1, self.processor.num_frames - (current_frame + 1), -1, -1
+                    )
             
-            # Liberar memoria
-            del frames
-            container.close()
-            
-            return self.processor.transform(video_tensor)
+                return self.processor.transform(video_tensor)
             
         except Exception as e:
             print(f"Error cargando video {video_path}: {str(e)}")
@@ -440,7 +442,7 @@ def combine_frames_to_video(frames_dir, output_path, fps=30):
 def train():
     # Configuración
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    batch_size = 2
+    batch_size = 1
     num_epochs = 100
     save_every = 500  # Guardar cada N pasos
     
