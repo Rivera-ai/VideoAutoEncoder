@@ -1,4 +1,4 @@
-# VideoAutoencoder
+<h1 align="center">VideoAutoEncoder</h1>
 
 <div align="center">
   <img src="Image/logo.png" alt="VideoAutoencoder Logo" width="200"/>
