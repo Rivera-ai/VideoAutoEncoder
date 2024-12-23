@@ -329,7 +329,7 @@ def TrainAutoEncoderAdapt240p():
     )
     
     # Modelo y optimizador - Asegurando que todo esté en float32 inicialmente
-    model = AdaptiveEfficientVideoAutoencoder(dim_latent=128).to(device)
+    model = AdaptiveEfficientVideoAutoencoder(dim_latent=128, duration=5, quality='240p').to(device)
     optimizer = AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
     scheduler = CosineAnnealingLR(optimizer, T_max=len(dataloader) * num_epochs)
     scaler = GradScaler()
@@ -452,7 +452,7 @@ def TrainAutoEncoderAdapt480p():
     )
     
     # Modelo y optimizador
-    model = AdaptiveEfficientVideoAutoencoder(dim_latent=128).to(device)
+    model = AdaptiveEfficientVideoAutoencoder(dim_latent=128, duration=5, quality='480p').to(device)
     optimizer = AdamW(model.parameters(), lr=3e-4, weight_decay=0.01)
     scheduler = CosineAnnealingLR(optimizer, T_max=len(dataloader) * num_epochs)
     scaler = GradScaler()

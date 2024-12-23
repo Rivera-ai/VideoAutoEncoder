@@ -130,144 +130,229 @@ class EfficientResBlock3D(nn.Module):
         return out + self.shortcut(x)
 
 class AdaptiveEfficientVideoAutoencoder(nn.Module):
-    def __init__(self, dim_latent=128, base_channels=32, min_spatial_size=15):
+    """
+Adaptive autoencoder for video compression with varying qualities and durations.
+
+This model implements an autoencoder that automatically adapts to different:
+- Video resolutions (240p, 360p, 480p, 720p)
+- Video durations
+- Frame rates (FPS)
+
+Key features:
+- Adaptive architecture that adjusts channels based on video quality
+- Intelligent temporal reduction system based on duration
+- Skip connections with automatic dimension adjustment
+- Attention mechanism in the latent space
+- Gradient checkpointing for memory optimization
+
+Example usage:
+```python
+# Create model for 240p videos, 5 seconds at 15 FPS
+model = AdaptiveVideoAutoencoder(
+    dim_latent=128,
+    fps=15,
+    duration=5,
+    quality='240p'
+)
+
+# Process a batch of videos
+# videos.shape = [batch_size, channels=3, frames=75, height=240, width=426]
+reconstructed = model(videos)
+
+# Print model information
+model.print_model_info()
+"""
+    def __init__(self, 
+                 dim_latent=128,
+                 fps=15,
+                 duration=5,
+                 quality='240p'):
         super().__init__()
+        
+        # Configuración base
         self.dim_latent = dim_latent
-        self.base_channels = base_channels
-        self.min_spatial_size = min_spatial_size
-        self._last_input_shape = None
+        self.fps = fps
+        self.duration = duration
+        self.quality = quality
         
-        # Bloques de encoder y decoder se crearán dinámicamente
-        self.encoder_blocks = nn.ModuleList()
-        self.decoder_blocks = nn.ModuleList()
+        # Configuraciones de calidad
+        self.quality_configs = {
+            '240p': {'height': 240, 'width': 426, 'channels_mult': 1.0},
+            '360p': {'height': 360, 'width': 640, 'channels_mult': 1.5},
+            '480p': {'height': 480, 'width': 854, 'channels_mult': 2.0},
+            '720p': {'height': 720, 'width': 1280, 'channels_mult': 3.0}
+        }
         
-        # Attention en el espacio latente
+        # Obtener multiplicador de canales según calidad
+        self.channels_mult = self.quality_configs[quality]['channels_mult']
+        
+        # Calcular canales base ajustados por calidad
+        self.channels = {
+            'c1': int(32 * self.channels_mult),
+            'c2': int(64 * self.channels_mult),
+            'c3': int(96 * self.channels_mult),
+            'c4': dim_latent
+        }
+        
+        # Calcular reducción temporal según duración
+        self.temporal_reduction = self._calculate_temporal_reduction()
+        
+        # Construir encoder
+        self.encoder_blocks = nn.ModuleList([
+            # Bloque inicial
+            nn.Sequential(
+                nn.Conv3d(3, self.channels['c1'], 
+                         kernel_size=(3, 7, 7),
+                         stride=(self.temporal_reduction[0], 2, 2),
+                         padding=(1, 3, 3),
+                         bias=False),
+                nn.BatchNorm3d(self.channels['c1']),
+                nn.ReLU(inplace=True)
+            ),
+            
+            # Bloques residuales
+            EfficientResBlock3D(
+                self.channels['c1'], 
+                self.channels['c2'],
+                stride=2,
+                temporal_stride=self.temporal_reduction[1]
+            ),
+            
+            EfficientResBlock3D(
+                self.channels['c2'],
+                self.channels['c3'],
+                stride=2,
+                temporal_stride=self.temporal_reduction[2]
+            ),
+            
+            EfficientResBlock3D(
+                self.channels['c3'],
+                self.channels['c4'],
+                stride=2,
+                temporal_stride=self.temporal_reduction[3]
+            )
+        ])
+        
+        # Mecanismo de atención mejorado
         self.attention = nn.Sequential(
+            nn.Conv3d(dim_latent, dim_latent, kernel_size=1),
+            nn.BatchNorm3d(dim_latent),
+            nn.ReLU(inplace=True),
             nn.Conv3d(dim_latent, dim_latent, kernel_size=1),
             nn.Sigmoid()
         )
         
-        # Capa de ajuste final
-        self.final_adjust = nn.Conv3d(3, 3, kernel_size=3, padding=1)
-        
-    def _calculate_num_blocks(self, input_shape):
-        """Calcula el número de bloques necesarios basado en las dimensiones de entrada"""
-        _, _, T, H, W = input_shape
-        
-        # Calcula niveles necesarios para reducir la dimensión espacial hasta min_spatial_size
-        spatial_levels = min(
-            ceil(log2(H / self.min_spatial_size)),
-            ceil(log2(W / self.min_spatial_size))
-        )
-        
-        # Calcula niveles temporales (más conservador con la reducción temporal)
-        temporal_levels = ceil(log2(T / self.min_spatial_size))
-        
-        return max(spatial_levels, temporal_levels, 2)  # Mínimo 2 niveles
-        
-    def _build_encoder(self, input_shape):
-        """Construye dinámicamente los bloques del encoder"""
-        self.encoder_blocks = nn.ModuleList()
-        num_blocks = self._calculate_num_blocks(input_shape)
-        current_channels = self.base_channels
-        
-        # Primer bloque (reducción espacial inicial)
-        self.encoder_blocks.append(
+        # Decoder con skip connections
+        self.decoder_blocks = nn.ModuleList([
             nn.Sequential(
-                nn.Conv3d(3, current_channels, 
-                         kernel_size=(3, 7, 7), 
-                         stride=(1, 2, 2), 
-                         padding=(1, 3, 3), 
-                         bias=False),
-                nn.BatchNorm3d(current_channels),
+                nn.ConvTranspose3d(dim_latent, self.channels['c3'],
+                                 kernel_size=4,
+                                 stride=(self.temporal_reduction[3], 2, 2),
+                                 padding=1),
+                nn.BatchNorm3d(self.channels['c3']),
                 nn.ReLU(inplace=True)
-            )
-        )
-        
-        # Bloques restantes
-        for i in range(num_blocks - 1):
-            next_channels = min(current_channels * 2, self.dim_latent)
-            temporal_stride = 2 if i < 2 else 1  # Reducción temporal en primeros bloques
+            ),
             
-            self.encoder_blocks.append(
-                EfficientResBlock3D(  # Cambiado a EfficientResBlock3D
-                    current_channels, 
-                    next_channels,
-                    stride=2,
-                    temporal_stride=temporal_stride
-                )
-            )
-            current_channels = next_channels
-            
-    def _build_decoder(self, num_blocks, final_shape):
-        """Construye dinámicamente los bloques del decoder"""
-        self.decoder_blocks = nn.ModuleList()
-        current_channels = self.dim_latent
-        
-        # Bloques de upsampling
-        for i in range(num_blocks - 1):
-            next_channels = max(current_channels // 2, self.base_channels)
-            temporal_stride = 2 if i >= num_blocks - 3 else 1  # Upsampling temporal en últimos bloques
-            
-            self.decoder_blocks.append(
-                nn.Sequential(
-                    nn.ConvTranspose3d(
-                        current_channels, 
-                        next_channels,
-                        kernel_size=4,
-                        stride=(temporal_stride, 2, 2),
-                        padding=1
-                    ),
-                    nn.BatchNorm3d(next_channels),
-                    nn.ReLU(inplace=True)
-                )
-            )
-            current_channels = next_channels
-            
-        # Bloque final
-        self.decoder_blocks.append(
             nn.Sequential(
-                nn.ConvTranspose3d(
-                    current_channels,
-                    3,
-                    kernel_size=4,
-                    stride=2,
-                    padding=1
-                ),
+                nn.ConvTranspose3d(self.channels['c3'], self.channels['c2'],
+                                 kernel_size=4,
+                                 stride=(self.temporal_reduction[2], 2, 2),
+                                 padding=1),
+                nn.BatchNorm3d(self.channels['c2']),
+                nn.ReLU(inplace=True)
+            ),
+            
+            nn.Sequential(
+                nn.ConvTranspose3d(self.channels['c2'], self.channels['c1'],
+                                 kernel_size=4,
+                                 stride=(self.temporal_reduction[1], 2, 2),
+                                 padding=1),
+                nn.BatchNorm3d(self.channels['c1']),
+                nn.ReLU(inplace=True)
+            ),
+            
+            nn.Sequential(
+                nn.ConvTranspose3d(self.channels['c1'], 3,
+                                 kernel_size=4,
+                                 stride=(self.temporal_reduction[0], 2, 2),
+                                 padding=1),
                 nn.Tanh()
             )
+        ])
+        
+        # Skip connections adjustments
+        self.skip_adjustments = nn.ModuleList([
+            nn.Conv3d(self.channels['c3'], self.channels['c3'], kernel_size=1),
+            nn.Conv3d(self.channels['c2'], self.channels['c2'], kernel_size=1),
+            nn.Conv3d(self.channels['c1'], self.channels['c1'], kernel_size=1)
+        ])
+        
+        # Ajuste final para dimensiones exactas
+        self.final_adjust = nn.Sequential(
+            nn.Conv3d(3, 16, kernel_size=3, padding=1),
+            nn.BatchNorm3d(16),
+            nn.ReLU(inplace=True),
+            nn.Conv3d(16, 3, kernel_size=3, padding=1),
+            nn.Tanh()
         )
-        
-    def _adapt_architecture(self, x):
-        """Adapta la arquitectura basada en las dimensiones de entrada"""
-        if not self.encoder_blocks or x.shape != self._last_input_shape:
-            self._last_input_shape = x.shape
-            num_blocks = self._calculate_num_blocks(x.shape)
-            self._build_encoder(x.shape)
-            self._build_decoder(num_blocks, x.shape)
-            
-            # Mover los bloques al mismo device y dtype que x
-            self.to(x.device, x.dtype)
-            
+    
+    def _calculate_temporal_reduction(self):
+        """Calcula la estrategia de reducción temporal basada en la duración"""
+        if self.duration >= 10:
+            return [2, 2, 2, 1]  # Reducción agresiva
+        elif self.duration >= 5:
+            return [1, 2, 1, 1]  # Reducción moderada
+        else:
+            return [1, 1, 1, 1]  # Sin reducción temporal
+    
     def forward(self, x):
-        # Adaptar arquitectura si es necesario
-        self._adapt_architecture(x)
+        print(f"Input shape to model: {x.shape}")
         
-        # Encoding con gradient checkpointing
+        # Encoding con almacenamiento de features
         h = x
-        for block in self.encoder_blocks:
-            h = checkpoint.checkpoint(block, h, use_reentrant=False)
+        features = []
         
-        # Attention en espacio latente
+        for i, block in enumerate(self.encoder_blocks):
+            h = checkpoint.checkpoint(block, h, use_reentrant=False)
+            print(f"Encoder block {i} output shape: {h.shape}")
+            features.append(h)
+        
+        # Attention con conexión residual
         att = self.attention(h)
-        h = h * att
+        h = h * att + h
+        print(f"After attention shape: {h.shape}")
         
-        # Decoding con gradient checkpointing
-        for block in self.decoder_blocks:
+        # Decoding con skip connections
+        for i, block in enumerate(self.decoder_blocks[:-1]):
             h = checkpoint.checkpoint(block, h, use_reentrant=False)
+            if i < len(self.skip_adjustments):
+                skip = self.skip_adjustments[i](features[-(i+2)])
+                if h.shape[2:] != skip.shape[2:]:
+                    h = F.interpolate(h, size=skip.shape[2:], 
+                                   mode='trilinear', align_corners=False)
+                h = h + skip
+            print(f"Decoder block {i} output shape: {h.shape}")
         
-        # Ajustar dimensiones finales si es necesario
+        # Bloque final y ajuste de dimensiones
+        h = self.decoder_blocks[-1](h)
         if h.shape[-3:] != x.shape[-3:]:
-            h = F.interpolate(h, size=x.shape[-3:], mode='trilinear', align_corners=False)
+            h = F.interpolate(h, size=x.shape[-3:], 
+                            mode='trilinear', align_corners=False)
         
-        return self.final_adjust(h)
+        output = self.final_adjust(h)
+        print(f"Final output shape: {output.shape}")
+        return output
+    
+    def print_model_info(self):
+        """Imprime información sobre la configuración del modelo"""
+        print(f"\nModelo configurado para:")
+        print(f"- Calidad: {self.quality}")
+        print(f"- FPS: {self.fps}")
+        print(f"- Duración: {self.duration}s")
+        print(f"- Frames totales: {self.fps * self.duration}")
+        print(f"- Multiplicador de canales: {self.channels_mult}")
+        print(f"- Canales: {self.channels}")
+        print(f"- Dimensión latente: {self.dim_latent}")
+        quality_config = self.quality_configs[self.quality]
+        print(f"- Resolución: {quality_config['height']}x{quality_config['width']}")
+        print(f"- Reducción temporal: {self.temporal_reduction}")
