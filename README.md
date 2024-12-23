@@ -4,6 +4,14 @@
 
 ## All information regarding VideoAutoEncoder usage and training is in the ```Test``` folder
 
+### Memory Usage in ```AdaptiveEfficientVideoAutoencoder``` at 480p 5s videos at 15fps
+
+![](Image/480.png)
+
+### Reconstruction done at 480p 5s 15fps
+
+![](videos/recon_video_480p_60.gif)
+
 ## Memory usage in the first version 0.1.0
 
 ### RAM
