@@ -1,5 +1,9 @@
 # VideoAutoencoder
 
+<div align="center">
+  <img src="Image/logo.png" alt="VideoAutoencoder Logo" width="200"/>
+</div>
+
 It is a small experiment to create an efficient Video Autoencoder for graphics with little VRAM memory and possible use in the [Prometheus](https://github.com/Rivera-ai/Prometheus) model.
 
 ## AdaptiveEfficientVideoAutoencoder (Version 0.3.0)
