@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="videoautoencoder",
-    version="0.2.1",
+    version="0.3.0",
     description="A video autoencoder library for video compression and reconstruction on low memory graphics cards",
     author="Rivera.ai/Fredy Rivera",
     author_email="riveraaai200678@gmail.com",

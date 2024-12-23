@@ -1,5 +1,9 @@
 # It is a small experiment to create an efficient Video Autoencoder for graphics with little VRAM memory and possible use in the [Prometheus](https://github.com/Rivera-ai/Prometheus) model
 
+## The new ```AdaptiveEfficientVideoAutoencoder``` offers a new Video AutoEncoder that can have different qualities or durations, right now tests and improvements are being done on this auto encoder, we have noticed that it takes a long time to learn to rebuild depending on the quality and duration
+
+## All information regarding VideoAutoEncoder usage and training is in the ```Test``` folder
+
 ## Memory usage in the first version 0.1.0
 
 ### RAM

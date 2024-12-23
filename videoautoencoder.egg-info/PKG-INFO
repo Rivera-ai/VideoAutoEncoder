@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: videoautoencoder
-Version: 0.2.1
+Version: 0.3.0
 Summary: A video autoencoder library for video compression and reconstruction on low memory graphics cards
 Author: Rivera.ai/Fredy Rivera
 Author-email: riveraaai200678@gmail.com
