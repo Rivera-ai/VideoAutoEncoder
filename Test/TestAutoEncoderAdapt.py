@@ -32,7 +32,7 @@ class VideoProcessor:
         Input/Output: tensor de forma [C, T, H, W]
         """
         # Print shape for debugging
-        print(f"Input video shape: {video.shape}")
+        #print(f"Input video shape: {video.shape}")
         
         # Ensure correct temporal dimension
         if video.shape[1] != self.num_frames:
@@ -58,7 +58,7 @@ class VideoProcessor:
         video = (video * 2) - 1
         
         # Print final shape for verification
-        print(f"Output video shape: {video.shape}")
+        #print(f"Output video shape: {video.shape}")
         
         return video
 
@@ -298,7 +298,7 @@ def TrainAutoEncoderAdapt240p():
     # Configuración específica para 240p
     resolution = (240, 426)
     fps = 15
-    duration = 10
+    duration = 5
     
     # Setup directorios
     results_folder = Path('./results_adaptive_240p')
@@ -330,7 +330,8 @@ def TrainAutoEncoderAdapt240p():
     
     # Modelo y optimizador - Asegurando que todo esté en float32 inicialmente
     model = AdaptiveEfficientVideoAutoencoder(dim_latent=128, duration=5, quality='240p').to(device)
-    optimizer = AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
+    model.print_model_info()
+    optimizer = AdamW(model.parameters(), lr=5e-5, weight_decay=0.01)
     scheduler = CosineAnnealingLR(optimizer, T_max=len(dataloader) * num_epochs)
     scaler = GradScaler()
     
@@ -453,6 +454,7 @@ def TrainAutoEncoderAdapt480p():
     
     # Modelo y optimizador
     model = AdaptiveEfficientVideoAutoencoder(dim_latent=128, duration=5, quality='480p').to(device)
+    model.print_model_info()
     optimizer = AdamW(model.parameters(), lr=3e-4, weight_decay=0.01)
     scheduler = CosineAnnealingLR(optimizer, T_max=len(dataloader) * num_epochs)
     scaler = GradScaler()
@@ -531,7 +533,7 @@ def TrainAutoEncoderAdapt480p():
 if __name__ == '__main__':
 #    print("Training AutoEncoder Base")
 #    TrainAutoEncoderBase()
-    print("Training AutoEncoder 240p 10s")
-    TrainAutoEncoderAdapt240p()
-#    print("Training AutoEncoder 480p 5s")
-#    TrainAutoEncoderAdapt480p()
+#    print("Training AutoEncoder 240p 5s")
+#    TrainAutoEncoderAdapt240p()
+    print("Training AutoEncoder 480p 5s")
+    TrainAutoEncoderAdapt480p()
