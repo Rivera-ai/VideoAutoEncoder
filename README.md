@@ -34,6 +34,10 @@ All information regarding VideoAutoEncoder usage and training is in the `Test` f
 #### VRAM
 ![](Image/VRAM2.png)
 
+### Version 0.3.0
+#### You can now train from a Colab for 240p 10s videos at 15fps
+![](Image/colab.PNG)
+
 ## Installation
 ```bash
 git clone https://github.com/Rivera-ai/VideoAutoencoder.git
