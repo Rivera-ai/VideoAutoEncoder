@@ -6,6 +6,10 @@
 
 It is a small experiment to create an efficient Video Autoencoder for graphics with little VRAM memory and possible use in the [Prometheus](https://github.com/Rivera-ai/Prometheus) model.
 
+## Dataset's used: 
+Refactor: https://huggingface.co/datasets/Fredtt3/Videos
+Original: https://huggingface.co/datasets/lmms-lab/VideoDetailCaption
+
 ## AdaptiveEfficientVideoAutoencoder (Version 0.3.0)
 
 The new `AdaptiveEfficientVideoAutoencoder` offers a Video AutoEncoder that can have different qualities or durations. Currently, tests and improvements are being done on this autoencoder. We have noticed that it takes time to learn to rebuild depending on the quality and duration.
