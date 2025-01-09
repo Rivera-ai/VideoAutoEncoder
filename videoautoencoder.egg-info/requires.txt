@@ -1,7 +1,0 @@
-torch
-torchvision
-numpy
-pillow
-av
-tqdm
-torchmetrics

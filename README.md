@@ -48,6 +48,10 @@ git clone https://github.com/Rivera-ai/VideoAutoencoder.git
 cd VideoAutoencoder
 pip install -e .
 ```
+## Installation via Pypi
+```bash
+pip install VideoAutoencoder
+```
 
 ## Training Results V0.1.0   
 
